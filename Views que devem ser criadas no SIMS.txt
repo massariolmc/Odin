@@ -1,0 +1,360 @@
+-- View: public.v_pessoas_movimentacoes
+
+-- DROP VIEW public.v_pessoas_movimentacoes;
+
+CREATE OR REPLACE VIEW public.v_pessoas_movimentacoes AS 
+ SELECT v_pessoas1.id,
+    v_pessoas1.ncompleto,
+    v_pessoas1.tipo,
+    v_pessoas1.tipo_id,
+    v_pessoas1.pgabrev,
+    v_pessoas1.grau_parentesco,
+    v_pessoas1.resp_ncompleto,
+    v_pessoas1.pesnguerra,
+    v_pessoas1.peslocaltrabalho,
+    v_pessoas1.resp_nguerra,
+    v_pessoas1.resp_posto,
+    v_pessoas1.resp_local,
+    v_pessoas1.resp_posto_id,
+    v_pessoas1.resp_local_id,
+    tb_movimentacoes.mov_cracha,
+    tb_movimentacoes.mov_dta_cad,
+    tba_portoes.portao_nome,
+    tba_portoes.portao_tipo,
+    tb_movimentacoes.mov_t_pessoa,
+    tb_movimentacoes.mov_placa,
+    tb_movimentacoes.mov_user_cad,
+    tb_movimentacoes.mov_obs,
+    tb_movimentacoes.mov_guia,
+    tb_movimentacoes.mov_km,
+    tb_movimentacoes.mov_pes_resp,
+    tb_movimentacoes.mov_id,
+    tb_movimentacoes.mov_ip,
+    tb_movimentacoes.mov_c_cracha,
+    tb_movimentacoes.mov_t_mov,
+        CASE
+            WHEN tb_movimentacoes.mov_c_cracha = 1 THEN 'S/ CRACHA'::text
+            WHEN tb_movimentacoes.mov_c_cracha = 0 THEN 'C/ CRACHA'::text
+            ELSE 'others'::text
+        END AS entradacracha,
+        CASE
+            WHEN tb_movimentacoes.mov_t_mov = 1 THEN 'ENTRADA'::text
+            WHEN tb_movimentacoes.mov_t_mov = 2 THEN 'SAIDA'::text
+            ELSE 'others'::text
+        END AS mov
+   FROM biga.tb_movimentacoes
+     LEFT JOIN v_pessoas1 ON tb_movimentacoes.mov_pes_id = v_pessoas1.id
+     LEFT JOIN bulldog.tba_portoes ON tb_movimentacoes.portao_id = tba_portoes.portao_id;
+
+ALTER TABLE public.v_pessoas_movimentacoes
+  OWNER TO postgres;
+
+
+
+########################################
+
+- View: public.v_pessoas2
+
+-- DROP VIEW public.v_pessoas2;
+
+CREATE OR REPLACE VIEW public.v_pessoas2 AS 
+ SELECT tb_situacao.situacaodesc::text AS tipo,
+    1 AS tipo_id,
+    tb_pessoas.pessexo,
+    'OPP'::character varying AS grau_parentesco,
+    tb_pessoas.pescodigo,
+    ltrim(tb_pessoas.pesncompleto::text, ' '::text) AS ncompleto,
+    tb_pessoas.pesnguerra,
+    tb_pessoas.pesfoto,
+    tb_pessoas.pespostograd,
+    tb_posto_graduacao.pgabrev,
+    tb_pessoas.pessispes,
+    tb_pessoas.pesidentidade,
+    tb_pessoas.pesrarc,
+    tb_pessoas.pescpf,
+    tb_pessoas.peslocaltrabalho,
+    tb_local_presta_servico.lpsdesc,
+    tb_pessoas.pesid AS id,
+    tb_pessoas.pes_cracha_id,
+    tb_cracha.crachanivel,
+    tb_pessoas.pesncompleto AS resp_ncompleto,
+    tb_pessoas.pesnguerra AS resp_nguerra,
+    tb_pessoas.pespostograd AS resp_posto_id,
+    tb_posto_graduacao.pgabrev AS resp_posto,
+    tb_pessoas.peslocaltrabalho AS resp_local_id,
+    tb_local_presta_servico.lpsdesc AS resp_local,
+    translate(lower(ltrim(tb_pessoas.pesncompleto::text, ' '::text)), 'ÁÉÍÓÚÀÈÌÒÙÃÕÂÊÎÔÛÄËÏÖÜÇáéíóúàèìòùãõâêîôûäëïöüç'::text, 'AEIOUAEIOUAOAEIOUAEIOUÇaeiouaeiouaoaeiouaeiouc'::text) AS ordem1,
+    tb_cracha.crachavalidade,
+    tb_cracha.crachadevolvido,
+    tb_cnh.cnh_numero AS cnh,
+    tb_cnh.cnh_cat AS cat,
+    tb_cnh.cnh_uf AS uf,
+    tb_cnh.cnh_validade AS validade,
+    tb_veiculo_pessoa.vcp_placa_id AS placa,
+    tb_veiculo.vcl_marca AS marca,
+    tb_veiculo.vcl_modelo AS modelo,
+    tb_veiculo.vcl_ano AS ano,
+    tb_veiculo.vcl_renavam AS renavam,
+    tb_veiculo.vcl_cor AS cor,
+    tb_veiculo.vcl_proprietario AS proprietario,
+        CASE
+            WHEN tb_veiculo.vcl_tipo = '1'::numeric THEN 'carro'::text
+            WHEN tb_veiculo.vcl_tipo = '2'::numeric THEN 'moto'::text
+            WHEN tb_veiculo.vcl_tipo = '3'::numeric THEN 'caminhão'::text
+            ELSE 'OUTRO'::text
+        END AS automovel,
+    tb_veiculo_selo.vsl_id AS selo
+   FROM tb_pessoas
+     JOIN tb_posto_graduacao ON tb_pessoas.pespostograd = tb_posto_graduacao.pgid
+     JOIN tb_local_presta_servico ON tb_pessoas.peslocaltrabalho = tb_local_presta_servico.lpsid
+     JOIN tb_situacao ON tb_pessoas.pessituacao = tb_situacao.situacaoid
+     LEFT JOIN tb_cracha ON tb_pessoas.pes_cracha_id = tb_cracha.crachaid
+     LEFT JOIN biga.tb_veiculo_pessoa ON tb_pessoas.pesid = tb_veiculo_pessoa.vcp_pes_id
+     LEFT JOIN biga.tb_cnh ON tb_pessoas.pesid = tb_cnh.cnh_pes_id
+     LEFT JOIN biga.tb_veiculo ON tb_veiculo_pessoa.vcp_placa_id::text = tb_veiculo.vcl_placa::text
+     LEFT JOIN biga.tb_veiculo_selo ON tb_veiculo_selo.vsl_vcl_placa::text = tb_veiculo.vcl_placa::text
+     LEFT JOIN biga.tb_veiculo_obs ON tb_veiculo_obs.vob_vcl_id = tb_veiculo_pessoa.vcp_placa_id::bpchar
+  WHERE tb_pessoas.pesncompleto::text <> ''::text
+UNION
+ SELECT 'DEPENDENTE'::text AS tipo,
+    2 AS tipo_id,
+    COALESCE(tb_pessoas_dep.pesdepsexo, 'I'::character varying) AS pessexo,
+    tb_grau_parentesco.parentedesc AS grau_parentesco,
+    tb_pessoas_dep.pescodigo,
+    ltrim(tb_pessoas_dep.pesdepnome::text, ' '::text) AS ncompleto,
+    substr(tb_pessoas_dep.pesdepnome::text, 1, "position"(tb_pessoas_dep.pesdepnome::text, ' '::text)) AS pesnguerra,
+    tb_pessoas_dep.pesdepid::text AS pesfoto,
+    0 AS pespostograd,
+    'CIVIL'::character varying AS pgabrev,
+    '0'::character varying AS pessispes,
+    '0'::character varying AS pesidentidade,
+    '0'::character varying AS pesrarc,
+    '0'::character varying AS pescpf,
+    0 AS peslocaltrabalho,
+    '--'::character varying AS lpsdesc,
+    tb_pessoas_dep.pesdepid AS id,
+    tb_pessoas_dep.pes_cracha_id,
+    12 AS crachanivel,
+    tb_pessoas.pesncompleto AS resp_ncompleto,
+    tb_pessoas.pesnguerra AS resp_nguerra,
+    tb_pessoas.pespostograd AS resp_posto_id,
+    tb_posto_graduacao.pgabrev AS resp_posto,
+    tb_pessoas.peslocaltrabalho AS resp_local_id,
+    tb_local_presta_servico.lpsdesc AS resp_local,
+    translate(lower(ltrim(tb_pessoas_dep.pesdepnome::text, ' '::text)), 'ÁÉÍÓÚÀÈÌÒÙÃÕÂÊÎÔÛÄËÏÖÜÇáéíóúàèìòùãõâêîôûäëïöüç'::text, 'AEIOUAEIOUAOAEIOUAEIOUÇaeiouaeiouaoaeiouaeiouc'::text) AS ordem1,
+    tb_cracha.crachavalidade,
+    tb_cracha.crachadevolvido,
+    tb_cnh.cnh_numero AS cnh,
+    tb_cnh.cnh_cat AS cat,
+    tb_cnh.cnh_uf AS uf,
+    tb_cnh.cnh_validade AS validade,
+    tb_veiculo_pessoa.vcp_placa_id AS placa,
+    tb_veiculo.vcl_marca AS marca,
+    tb_veiculo.vcl_modelo AS modelo,
+    tb_veiculo.vcl_ano AS ano,
+    tb_veiculo.vcl_renavam AS renavam,
+    tb_veiculo.vcl_cor AS cor,
+    tb_veiculo.vcl_proprietario AS proprietario,
+        CASE
+            WHEN tb_veiculo.vcl_tipo = '1'::numeric THEN 'carro'::text
+            WHEN tb_veiculo.vcl_tipo = '2'::numeric THEN 'moto'::text
+            WHEN tb_veiculo.vcl_tipo = '3'::numeric THEN 'caminhão'::text
+            ELSE 'OUTRO'::text
+        END AS automovel,
+    tb_veiculo_selo.vsl_id AS selo
+   FROM tb_pessoas_dep
+     JOIN tb_pessoas ON tb_pessoas_dep.pesdeppesid = tb_pessoas.pesid
+     LEFT JOIN tb_grau_parentesco ON tb_pessoas_dep.pesdepgrau = tb_grau_parentesco.parenteid
+     LEFT JOIN tb_posto_graduacao ON tb_pessoas.pespostograd = tb_posto_graduacao.pgid
+     LEFT JOIN tb_local_presta_servico ON tb_pessoas.peslocaltrabalho = tb_local_presta_servico.lpsid
+     LEFT JOIN tb_cracha ON tb_pessoas_dep.pes_cracha_id = tb_cracha.crachaid
+     LEFT JOIN biga.tb_veiculo_pessoa ON tb_pessoas_dep.pesdepid = tb_veiculo_pessoa.vcp_pes_id
+     LEFT JOIN biga.tb_cnh ON tb_pessoas_dep.pesdepid = tb_cnh.cnh_pes_id
+     LEFT JOIN biga.tb_veiculo ON tb_veiculo_pessoa.vcp_placa_id::text = tb_veiculo.vcl_placa::text
+     LEFT JOIN biga.tb_veiculo_selo ON tb_veiculo_selo.vsl_vcl_placa::text = tb_veiculo.vcl_placa::text
+     LEFT JOIN biga.tb_veiculo_obs ON tb_veiculo_obs.vob_vcl_id = tb_veiculo_pessoa.vcp_placa_id::bpchar
+UNION
+ SELECT 'VISITANTE'::text AS tipo,
+    3 AS tipo_id,
+    'I'::character varying AS pessexo,
+    'OPP'::character varying AS grau_parentesco,
+    tb_visitante.visitanteid::text AS pescodigo,
+    ltrim(tb_visitante.visitante_nome::text, ' '::text) AS ncompleto,
+    substr(tb_visitante.visitante_nome::text, 1, "position"(tb_visitante.visitante_nome::text, ' '::text)) AS pesnguerra,
+    COALESCE(( SELECT tb_visitante_foto_1.visfoto_foto1
+           FROM cav.tb_visitante_foto tb_visitante_foto_1
+          WHERE tb_visitante_foto_1.visfoto_visitante = tb_visitante.visitanteid
+          ORDER BY tb_visitante_foto_1.visfotoid
+         LIMIT 1), '0'::text) AS pesfoto,
+    0 AS pespostograd,
+    'CIVIL'::character varying AS pgabrev,
+    '0'::character varying AS pessispes,
+    COALESCE(tb_visitante_doc.visdoc_docnro, '0'::character varying) AS pesidentidade,
+    '0'::character varying AS pesrarc,
+    COALESCE(tb_visitante_doc.visdoc_docnro, '0'::character varying) AS pescpf,
+    0 AS peslocaltrabalho,
+    '--'::character varying AS lpsdesc,
+    tb_visitante.visitanteid AS id,
+    COALESCE(( SELECT tb_visitante_acesso_1.visacesso_cracha
+           FROM cav.tb_visitante_acesso tb_visitante_acesso_1
+          WHERE tb_visitante_acesso_1.visacesso_visitante = tb_visitante.visitanteid AND tb_visitante_acesso_1.visacesso_datasai IS NULL
+          ORDER BY tb_visitante_acesso_1.visacesso_dataent DESC
+         LIMIT 1), 0) AS pes_cracha_id,
+    COALESCE(( SELECT tb_visitante_acesso_1.visacesso_crachanivel
+           FROM cav.tb_visitante_acesso tb_visitante_acesso_1
+          WHERE tb_visitante_acesso_1.visacesso_visitante = tb_visitante.visitanteid
+          ORDER BY tb_visitante_acesso_1.visacesso_dataent DESC
+         LIMIT 1), 0) AS crachanivel,
+    tb_visitante.visitante_nome AS resp_ncompleto,
+    substr(tb_visitante.visitante_nome::text, 1, "position"(tb_visitante.visitante_nome::text, ' '::text)) AS resp_nguerra,
+    0 AS resp_posto_id,
+    'CIVIL'::character varying AS resp_posto,
+    0 AS resp_local_id,
+    '--'::character varying AS resp_local,
+    translate(lower(ltrim(tb_visitante.visitante_nome::text, ' '::text)), 'ÁÉÍÓÚÀÈÌÒÙÃÕÂÊÎÔÛÄËÏÖÜÇáéíóúàèìòùãõâêîôûäëïöüç'::text, 'AEIOUAEIOUAOAEIOUAEIOUÇaeiouaeiouaoaeiouaeiouc'::text) AS ordem1,
+    tb_visitante_acesso.visacesso_datasai AS crachavalidade,
+    '0'::character varying AS crachadevolvido,
+    '0'::character varying AS cnh,
+    '0'::character varying AS cat,
+    '0'::character varying AS uf,
+    tb_visitante_acesso.visacesso_datasai AS validade,
+    tb_visitante_veic.visveic_placa AS placa,
+    tb_visitante_veic.visveic_marca AS marca,
+    tb_visitante_veic.visveic_tipo AS modelo,
+    tb_visitante_veic.visveic_ano AS ano,
+    tb_visitante_veic.visveic_renavam AS renavam,
+    tb_visitante_veic.visveic_cor AS cor,
+    '0'::character varying AS proprietario,
+    '0'::character varying AS automovel,
+    0 AS selo
+   FROM cav.tb_visitante
+     LEFT JOIN cav.tb_visitante_acesso ON tb_visitante.visitanteid = tb_visitante_acesso.visacesso_visitante
+     LEFT JOIN cav.tb_visitante_acomp ON tb_visitante.visitanteid = tb_visitante_acomp.visacomp_id
+     LEFT JOIN cav.tb_visitante_doc ON tb_visitante.visitanteid = tb_visitante_doc.visdoc_visitante
+     LEFT JOIN cav.tb_visitante_foto ON tb_visitante.visitanteid = tb_visitante_foto.visfoto_visitante
+     LEFT JOIN cav.tb_visitante_veic ON tb_visitante.visitanteid = tb_visitante_veic.visveic_visitante
+     LEFT JOIN cav.tba_justifica_vis ON tb_visitante.visitanteid = tba_justifica_vis.justifica_vis
+     LEFT JOIN cav.tba_tipodoc_vis ON tb_visitante_doc.visdoc_tipodoc = tba_tipodoc_vis.tipodoc_id
+  WHERE tb_visitante.visitante_nome::text <> ''::text
+UNION
+ SELECT 'OPERACIONAIS'::text AS tipo,
+    4 AS tipo_id,
+    'I'::character varying AS pessexo,
+    'OPP'::character varying AS grau_parentesco,
+    tb_pessoas_visita.pesvisid::text AS pescodigo,
+    ltrim(tb_pessoas_visita.pesvisncompleto::text, ' '::text) AS ncompleto,
+    tb_pessoas_visita.pesvisnguerra AS pesnguerra,
+    tb_pessoas_visita.pesvisfoto::text AS pesfoto,
+    tb_pessoas_visita.pesvispostograd AS pespostograd,
+    tb_posto_graduacao.pgabrev,
+    '0'::character varying AS pessispes,
+    COALESCE(tb_pessoas_visita.pesvisidentidade, '0'::character varying) AS pesidentidade,
+    '0'::character varying AS pesrarc,
+    '0'::character varying AS pescpf,
+    0 AS peslocaltrabalho,
+    tb_pessoas_visita.pesvisunidade AS lpsdesc,
+    tb_pessoas_visita.pesvisid AS id,
+    tb_pessoas_visita.pesvis_cracha_id AS pes_cracha_id,
+    tb_cracha_deslocado.crachanivel,
+    tb_pessoas_visita.pesvisncompleto AS resp_ncompleto,
+    tb_pessoas_visita.pesvisnguerra AS resp_nguerra,
+    tb_pessoas_visita.pesvispostograd AS resp_posto_id,
+    tb_pessoas_visita.pesvisnguerra AS resp_posto,
+    tb_local_presta_servico.lpsid AS resp_local_id,
+    tb_local_presta_servico.lpsdesc AS resp_local,
+    translate(lower(ltrim(tb_pessoas_visita.pesvisncompleto::text, ' '::text)), 'ÁÉÍÓÚÀÈÌÒÙÃÕÂÊÎÔÛÄËÏÖÜÇáéíóúàèìòùãõâêîôûäëïöüç'::text, 'AEIOUAEIOUAOAEIOUAEIOUÇaeiouaeiouaoaeiouaeiouc'::text) AS ordem1,
+    tb_cracha_deslocado.crachavalidade,
+    tb_cracha_deslocado.crachadevolvido,
+    tb_cnh.cnh_numero AS cnh,
+    tb_cnh.cnh_cat AS cat,
+    tb_cnh.cnh_uf AS uf,
+    tb_cnh.cnh_validade AS validade,
+    tb_veiculo_pessoa.vcp_placa_id AS placa,
+    tb_veiculo.vcl_marca AS marca,
+    tb_veiculo.vcl_modelo AS modelo,
+    tb_veiculo.vcl_ano AS ano,
+    tb_veiculo.vcl_renavam AS renavam,
+    tb_veiculo.vcl_cor AS cor,
+    tb_veiculo.vcl_proprietario AS proprietario,
+        CASE
+            WHEN tb_veiculo.vcl_tipo = '1'::numeric THEN 'carro'::text
+            WHEN tb_veiculo.vcl_tipo = '2'::numeric THEN 'moto'::text
+            WHEN tb_veiculo.vcl_tipo = '3'::numeric THEN 'caminhão'::text
+            ELSE 'OUTRO'::text
+        END AS automovel,
+    tb_veiculo_selo.vsl_id AS selo
+   FROM tb_pessoas_visita
+     LEFT JOIN tb_posto_graduacao ON tb_pessoas_visita.pesvispostograd = tb_posto_graduacao.pgid
+     LEFT JOIN tb_local_presta_servico ON tb_pessoas_visita.pesvisesq = tb_local_presta_servico.lpsid
+     LEFT JOIN tb_cracha_deslocado ON tb_pessoas_visita.pesvis_cracha_id = tb_cracha_deslocado.crachaid
+     LEFT JOIN biga.tb_veiculo_pessoa ON tb_pessoas_visita.pesvisid = tb_veiculo_pessoa.vcp_pes_id
+     LEFT JOIN biga.tb_cnh ON tb_pessoas_visita.pesvisid = tb_cnh.cnh_pes_id
+     LEFT JOIN biga.tb_veiculo ON tb_veiculo_pessoa.vcp_placa_id::text = tb_veiculo.vcl_placa::text
+     LEFT JOIN biga.tb_veiculo_selo ON tb_veiculo_selo.vsl_vcl_placa::text = tb_veiculo.vcl_placa::text
+     LEFT JOIN biga.tb_veiculo_obs ON tb_veiculo_obs.vob_vcl_id = tb_veiculo_pessoa.vcp_placa_id::bpchar
+UNION
+ SELECT 'SERVICO'::text AS tipo,
+    5 AS tipo_id,
+    'I'::character varying AS pessexo,
+    'OPP'::character varying AS grau_parentesco,
+    tb_pessoa_estserv.pesesid::text AS pescodigo,
+    ltrim(tb_pessoa_estserv.pesesnome::text, ' '::text) AS ncompleto,
+    substr(tb_pessoa_estserv.pesesnome::text, 1, "position"(tb_pessoa_estserv.pesesnome::text, ' '::text)) AS pesnguerra,
+    tb_pessoa_estserv.pesescinum::text || tb_pessoa_estserv.pesesciorgao::text AS pesfoto,
+    0 AS pespostograd,
+    'CIVIL'::character varying AS pgabrev,
+    '0'::character varying AS pessispes,
+    COALESCE(tb_pessoa_estserv.pesescinum, '0'::character varying) AS pesidentidade,
+    '0'::character varying AS pesrarc,
+    COALESCE(tb_pessoa_estserv.pesescpf, '0'::character varying) AS pescpf,
+    0 AS peslocaltrabalho,
+    '--'::character varying AS lpsdesc,
+    tb_pessoa_estserv.pesesid AS id,
+    COALESCE(( SELECT tb_cracha_estserv_1.crachaid
+           FROM tb_cracha_estserv tb_cracha_estserv_1
+          WHERE tb_cracha_estserv_1.crachapessoa = tb_pessoa_estserv.pesesid AND tb_cracha_estserv_1.crachadevolvido::text = '0'::text
+         LIMIT 1), 0) AS pes_cracha_id,
+    COALESCE(( SELECT tb_cracha_estserv_1.crachanivel
+           FROM tb_cracha_estserv tb_cracha_estserv_1
+          WHERE tb_cracha_estserv_1.crachapessoa = tb_pessoa_estserv.pesesid AND tb_cracha_estserv_1.crachadevolvido::text = '0'::text
+         LIMIT 1), 0) AS crachanivel,
+    tb_pessoa_estserv.pesesnome AS resp_ncompleto,
+    substr(tb_pessoa_estserv.pesesnome::text, 1, "position"(tb_pessoa_estserv.pesesnome::text, ' '::text)) AS resp_nguerra,
+    0 AS resp_posto_id,
+    'CIVIL'::character varying AS resp_posto,
+    0 AS resp_local_id,
+    tb_pessoa_estserv.peseslocalserv AS resp_local,
+    translate(lower(ltrim(tb_pessoa_estserv.pesesnome::text, ' '::text)), 'ÁÉÍÓÚÀÈÌÒÙÃÕÂÊÎÔÛÄËÏÖÜÇáéíóúàèìòùãõâêîôûäëïöüç'::text, 'AEIOUAEIOUAOAEIOUAEIOUÇaeiouaeiouaoaeiouaeiouc'::text) AS ordem1,
+    tb_cracha_estserv.crachavalidade,
+    tb_cracha_estserv.crachadevolvido,
+    tb_cnh.cnh_numero AS cnh,
+    tb_cnh.cnh_cat AS cat,
+    tb_cnh.cnh_uf AS uf,
+    tb_cnh.cnh_validade AS validade,
+    tb_veiculo_pessoa.vcp_placa_id AS placa,
+    tb_veiculo.vcl_marca AS marca,
+    tb_veiculo.vcl_modelo AS modelo,
+    tb_veiculo.vcl_ano AS ano,
+    tb_veiculo.vcl_renavam AS renavam,
+    tb_veiculo.vcl_cor AS cor,
+    tb_veiculo.vcl_proprietario AS proprietario,
+        CASE
+            WHEN tb_veiculo.vcl_tipo = '1'::numeric THEN 'carro'::text
+            WHEN tb_veiculo.vcl_tipo = '2'::numeric THEN 'moto'::text
+            WHEN tb_veiculo.vcl_tipo = '3'::numeric THEN 'caminhão'::text
+            ELSE 'OUTRO'::text
+        END AS automovel,
+    tb_veiculo_selo.vsl_id AS selo
+   FROM tb_pessoa_estserv
+     LEFT JOIN tb_pessoa_estserv_data ON tb_pessoa_estserv.pesesid = tb_pessoa_estserv_data.pesespessoa
+     LEFT JOIN tb_cracha_estserv ON tb_pessoa_estserv_data.pesespessoa = tb_cracha_estserv.crachapessoa
+     LEFT JOIN biga.tb_veiculo_pessoa ON tb_pessoa_estserv.pesesid = tb_veiculo_pessoa.vcp_pes_id
+     LEFT JOIN biga.tb_cnh ON tb_pessoa_estserv.pesesid = tb_cnh.cnh_pes_id
+     LEFT JOIN biga.tb_veiculo ON tb_veiculo_pessoa.vcp_placa_id::text = tb_veiculo.vcl_placa::text
+     LEFT JOIN biga.tb_veiculo_selo ON tb_veiculo_selo.vsl_vcl_placa::text = tb_veiculo.vcl_placa::text
+     LEFT JOIN biga.tb_veiculo_obs ON tb_veiculo_obs.vob_vcl_id = tb_veiculo_pessoa.vcp_placa_id::bpchar
+  ORDER BY 2, 6;
+
+ALTER TABLE public.v_pessoas2
+  OWNER TO postgres;
+
