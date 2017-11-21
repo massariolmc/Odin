@@ -100,19 +100,23 @@ class Materialcarga::AppointmentsController < ApplicationController
   end
 
     def get_esq_sec
-      aux = Appointment.select(:sims_tba_esq_secao_id).order(sims_tba_esq_secao_id: :asc)
-      @valor = "("
-      tam = aux.size
-      i = 0
-      aux.each do |aa|        
-        if i == (tam - 1)
-          @valor << "#{aa.sims_tba_esq_secao_id}"
-        else
-          @valor << "#{aa.sims_tba_esq_secao_id},"
-        end
-        i = i + 1
-      end 
-      @depart = SimsDepartment.where("esqsec_id not in #{@valor})")
+      if Appointment.exists?
+        aux = Appointment.select(:sims_tba_esq_secao_id).order(sims_tba_esq_secao_id: :asc)
+        @valor = "("
+        tam = aux.size
+        i = 0
+        aux.each do |aa|      
+          if i == (tam - 1)
+            @valor << "#{aa.sims_tba_esq_secao_id}"
+          else
+            @valor << "#{aa.sims_tba_esq_secao_id},"
+          end
+          i = i + 1
+        end      
+         @depart = SimsDepartment.where("esqsec_id not in #{@valor})") 
+      else
+         @depart = SimsDepartment.all
+      end
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.

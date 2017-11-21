@@ -17,5 +17,5 @@
 .byebug_history
 
 # secrets e database
-/config/database.yml
-/confg/secrets.yml
+#/config/database.yml
+#/confg/secrets.yml

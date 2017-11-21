@@ -28,7 +28,7 @@ authorizations: &AUTHORIZATIONS
 ## Environment
 
 development:
-  host: 192.168.1.115
+  host: 192.168.0.27
   port: 389
   attribute: uid
   base: ou=Users,dc=mjml,dc=net
@@ -48,11 +48,11 @@ test:
   # <<: *AUTHORIZATIONS
 
 production:
-  host: localhost
-  port: 636
-  attribute: cn
-  base: ou=people,dc=test,dc=com
-  admin_user: cn=admin,dc=test,dc=com
-  admin_password: admin_password
-  ssl: start_tls
+  host: 192.168.0.27
+  port: 389
+  attribute: uid
+  base: ou=Users,dc=mjml,dc=net
+  admin_user: cn=admin,dc=mjml,dc=net
+  admin_password: 1q2w3e
+  ssl: false
   # <<: *AUTHORIZATIONS

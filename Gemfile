@@ -49,6 +49,7 @@ gem 'toastr-rails'
 gem 'prawn'
 gem 'responders'
 gem 'prawn-table'
+gem 'unicorn'
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
