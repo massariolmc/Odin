@@ -1,0 +1,2 @@
+-arrumar as fotos no sims_people, dependentes, inativos e pensionistas. Colocar para aparecer a foto no show e index. No editar, fazer um upload.
+

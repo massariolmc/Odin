@@ -58,7 +58,7 @@ pt:
       signed_in: 'Login efetuado com sucesso!'
       signed_out: 'Saiu com sucesso.'
       new:
-        title: 'Login'        
+        title: 'Bem-Vindo, faça o login para acessar o sistema.'        
     unlocks:
       send_instructions: 'Dentro de minutos, você receberá um email com instruções para o desbloqueio da sua conta.'
       send_paranoid_instructions: 'Se sua conta existir, você receberá um e-mail com instruções para desbloqueá-la em alguns minutos.'

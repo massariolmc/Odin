@@ -11,18 +11,16 @@
 // about supported directives.
 //
 //= require jquery
-//= require jquery-ui
 //= require jquery_ujs
-//= require bootstrap
+//= require jquery-ui
+//= require vendor/bootstrap/js/bootstrap
+//= require vendor/metisMenu/metisMenu
+//= require vendor/datatables/js/jquery.dataTables
+//= require vendor/datatables-plugins/dataTables.bootstrap
+//= require vendor/datatables-responsive/dataTables.responsive
+//= require js/sb-admin-2
 //= require cocoon
 //= require toastr
-//= require js_datatables/dataTables.bootstrap
-//= require js_datatables/dataTables.bootstrap4
-//= require js_datatables/dataTables.foundation
-//= require js_datatables/dataTables.jqueryui
-//= require js_datatables/dataTables.material
-//= require js_datatables/dataTables.semanticui
-//= require js_datatables/dataTables.uikit
-//= require js_datatables/jquery.dataTables
 //= require sims_biga_licenses
 //= require_tree .
+

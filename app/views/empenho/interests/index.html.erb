@@ -4,10 +4,16 @@
 <p>
 
 
-<h1><%= t ('.title') %></h1>
-
-<div class="table-responsive">
-<table class="display" id="interests">
+ <!-- /.row -->
+<div class="row">
+  <div class="col-lg-12">
+      <div class="panel panel-default">
+          <div class="panel-heading">
+              <%= t ('.title') %>
+          </div>
+          <!-- /.panel-heading -->
+          <div class="panel-body">
+  <table width="100%" class="table table-striped table-bordered table-hover" id="datatable">
   <thead>
     <tr>
         <th><%= t('empenho.interests.fields.n_empenho') %> </th>    
@@ -44,8 +50,14 @@
     <% end %>
   </tbody>
 </table>
-
-</div>
+          </div>
+          <!-- /.panel-body -->
+        </div>
+      <!-- /.panel -->
+      </div>
+    <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row --> 
 <br>
 
 <%= link_to t('links.new'), new_interest_path %>
